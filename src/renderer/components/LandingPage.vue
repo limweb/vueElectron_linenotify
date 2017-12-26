@@ -83,6 +83,8 @@
 					</div>
 					<button class="alt" @click="open('https://devdocs.line.me/files/sticker_list.pdf')">Sticker List</button>
 					<button class="alt" @click="linestatus">Validate Line Token</button>
+					<button class="alt" @click="lineimport">import</button>
+					<button class="alt" @click="lineexport">export</button>
 				</div>
 			</main>
 		</div>
@@ -139,6 +141,27 @@ export default {
     };
   },
   methods: {
+  	lineimport(){
+  	 	let form = $(`<div><label>Token:</label><textarea style="width:100%;height:400px;" name="tokentxt"></textarea></div>`);
+      bootbox.alert(form, () => { 
+      		let t = form.find("textarea[name=tokentxt]").val();
+      		t = JSON.parse(t);
+      		console.log('tokendata-',t)
+      		t.map(r=>{
+    		  console.log(r);
+    		  if(r.token != ''){
+		          if (!db.get("tokens").find({ token: r.token }).value()) {
+		            db.get("tokens").push({ token: r.token, name: r.name }).write(); //vuetw
+		          }
+    		  }
+      		})
+            this.tokens = db.get("tokens").value();
+            this.$forceUpdate();
+      });
+  	},
+  	lineexport(){
+  		this.status = JSON.stringify(this.tokens);
+  	},
     deltoken() {
       bootbox.confirm({
         message: "Are you sure want to delete this token ? ",
@@ -181,7 +204,7 @@ export default {
     },
     changetoken() {
       console.log("changetoken");
-      var form = $(`<form id='infos' action=''>
+      let form = $(`<form id='infos' action=''>
 				<table style="width:700px"><tr>
 				<td style="width:60px">Token</td>
 				<td style="width:400px"><input type='text' style="width:400px" name='token' /></td>
@@ -197,16 +220,8 @@ export default {
         console.log(n);
         if (t != "" && n != "") {
           console.log("add token");
-          if (
-            !db
-              .get("tokens")
-              .find({ token: t })
-              .value()
-          ) {
-            db
-              .get("tokens")
-              .push({ token: t, name: n })
-              .write(); //vuetw
+          if (!db.get("tokens").find({ token: t }).value()) {
+            db.get("tokens").push({ token: t, name: n }).write(); //vuetw
             this.tokens = db.get("tokens").value();
             this.$forceUpdate();
           }
